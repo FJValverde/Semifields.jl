@@ -1,0 +1,11 @@
+name = "Semifields"
+uuid = "ce172cc3-0a93-45b0-a8c2-dc4561e814ec"
+authors = ["Francisco J. Valverde <francisco.valverde@urjc.es>"]
+version = "0.0.1"
+
+[deps]
+ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+LogExpFunctions = "2ab3a3ac-af41-5b50-aa03-7779005ae688"
+
+[compat]
+julia = "1.10.1"

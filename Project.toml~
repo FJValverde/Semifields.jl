@@ -1,0 +1,4 @@
+name = "Semifields"
+uuid = "ce172cc3-0a93-45b0-a8c2-dc4561e814ec"
+authors = ["Francisco J. Valverde <francisco.valverde@urjc.es>"]
+version = "0.1.0"
