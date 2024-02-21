@@ -9,3 +9,6 @@ LogExpFunctions = "2ab3a3ac-af41-5b50-aa03-7779005ae688"
 
 [compat]
 julia = "1.10.1"
+ChainRulesCore = "1.22.0"
+LogExpFunctions = "0.3.27"
+
