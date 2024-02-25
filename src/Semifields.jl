@@ -1,32 +1,95 @@
+# SPDX-License-Identifier: CECILL-2.1
 """
         module Semifields: A module to capture the concept of a semifield and provide most notorious examples.
 """
 module Semifields
 
-#greet() = print("Hello World!")
+using ChainRulesCore
+import LogExpFunctions: logaddexp
 
-export plusTwo
+export
+    # Main API.
+    ⊕, #\oplus
+    ⊗, #\otimes
+    #inv, #conjugation
+    top, 
+    val,
+
+    # Partial derivative functions.
+    ∂sum,
+    ∂rmul,
+    ∂lmul,
+
+    # Concrete types.
+    Semifield,
+    ArcticSemifield,
+    BoolSemifield,
+    LogSemifield,
+    ProbSemifield,
+    TropicalSemifield
+
+
+###############################################################################
+# Abstract semifield type.
+include("main_API.jl")
+
+
+###############################################################################
+# Concrete semifield types.
+include("concrete_semifields.jl")
+
+###############################################################################
+# Differentiation.
 
 """
-    plusTwo(x)
+    ∂sum(z, x)
 
-Sum the numeric "2" to whatever it receives as input
-
-A more detailed explanation can go here, although I guess it is not needed in this case
-
-# Arguments
-* `x`: The amount to which we want to add 2
-
-# Notes
-* Notes can go here
-
-# Examples
-```julia
-julia> five = plusTwo(3)
-5
-```
+Compute the partial derivative of `z = x ⊕ y ⊕ z ⊕ ...` w.r.t. `x`.
 """
-plusTwo(x) = return x+2
+∂sum
 
+"""
+    ∂rmul(x, a)
 
-end # module Semifields
+Compute the partial derivative of `x ⊗ a` w.r.t. `x`.
+"""
+∂rmul
+
+"""
+    ∂lmul(a, x)
+
+Compute the partial derivative of `a ⊗ x` w.r.t. `x`.
+"""
+∂lmul
+
+function ChainRulesCore.rrule(::typeof(_logaddexp), τ, x, y)
+    z = _logaddexp(τ, x, y)
+
+    function _logaddexp_pullback(z̄)
+        if x == y == -Inf
+            (NoTangent(), NoTangent(), 0, 0)
+        else
+            (NoTangent(), NoTangent(), exp(τ*(x - z)) * z̄, exp(τ*(y - z)) * z̄)
+        end
+    end
+
+    z, _logaddexp_pullback
+end
+
+function ChainRulesCore.rrule(::typeof(val), a::Semifield)
+    b = val(a)
+    function val_pullback(b̄)
+        ZeroTangent(), Tangent{typeof(a)}(; val=b̄)
+    end
+    b, val_pullback
+end
+
+function ChainRulesCore.rrule(S::Type{<:Semifield}, a)
+    b = S(a)
+    function semifield_pullback(b̄)
+        ZeroTangent(), b̄.val
+    end
+    b, semifield_pullback
+end
+
+end
