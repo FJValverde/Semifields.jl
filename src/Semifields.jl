@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: CECILL-2.1
 """
-        module Semifields: A module to capture the concept of a semifield and provide most notorious examples.
+        Semifields
+
+A module to capture the concept of a semifield and provide its most notorious examples.
 """
 module Semifields
 
@@ -21,12 +23,12 @@ export
     ∂lmul,
 
     # Concrete types.
-    Semifield,
-    ArcticSemifield,
-    BoolSemifield,
-    LogSemifield,
-    ProbSemifield,
-    TropicalSemifield
+    Semifield
+    # ArcticSemifield,
+    # BoolSemifield,
+    # LogSemifield,
+    # ProbSemifield,
+    # TropicalSemifield
 
 
 ###############################################################################
@@ -62,20 +64,6 @@ Compute the partial derivative of `a ⊗ x` w.r.t. `x`.
 """
 ∂lmul
 
-function ChainRulesCore.rrule(::typeof(_logaddexp), τ, x, y)
-    z = _logaddexp(τ, x, y)
-
-    function _logaddexp_pullback(z̄)
-        if x == y == -Inf
-            (NoTangent(), NoTangent(), 0, 0)
-        else
-            (NoTangent(), NoTangent(), exp(τ*(x - z)) * z̄, exp(τ*(y - z)) * z̄)
-        end
-    end
-
-    z, _logaddexp_pullback
-end
-
 function ChainRulesCore.rrule(::typeof(val), a::Semifield)
     b = val(a)
     function val_pullback(b̄)
@@ -83,6 +71,7 @@ function ChainRulesCore.rrule(::typeof(val), a::Semifield)
     end
     b, val_pullback
 end
+
 
 function ChainRulesCore.rrule(S::Type{<:Semifield}, a)
     b = S(a)
@@ -92,4 +81,4 @@ function ChainRulesCore.rrule(S::Type{<:Semifield}, a)
     b, semifield_pullback
 end
 
-end
+end#module Semifields
