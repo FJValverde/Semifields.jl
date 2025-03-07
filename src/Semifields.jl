@@ -23,12 +23,12 @@ export
     ∂lmul,
 
     # Concrete types.
-    Semifield
-    # ArcticSemifield,
-    # BoolSemifield,
-    # LogSemifield,
+    Semifield,
+    ArcticSemifield,
+    BoolSemifield,
+    LogSemifield,
     # ProbSemifield,
-    # TropicalSemifield
+    TropicalSemifield
 
 
 ###############################################################################

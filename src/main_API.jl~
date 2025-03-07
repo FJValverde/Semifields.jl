@@ -1,0 +1,59 @@
+@doc raw"""
+    abstract type Semifield end
+
+Abstract type for a semiring ``(S, \oplus, \otimes, \bar{0}, \bar{1})``.
+```math
+(S, \\oplus, \\otimes, \\bar{0}, \\bar{1}
+```
+
+"""
+abstract type Semifield{T} end
+
+"""
+    x ⊕ y
+
+Semifield addition.
+"""
+⊕
+
+"""
+    x ⊗ y
+
+Semifield multiplication.
+"""
+⊗
+
+"""
+    val(x::Semifield)
+
+Return the "real" value / object wrapped in the semiring type
+"""
+val(x::Semifield) = x.val
+
+"""
+    Base.valtype(::Type{<:Semifield{T}}) where T
+
+Return the type of the value wrapped by the semiring.
+"""
+Base.valtype(::Type{<:Semifield{T}}) where T = T
+
+Base.zero(x::Semifield) = zero(typeof(x))
+Base.one(x::Semifield) = one(typeof(x))
+
+function Base.:*(i::Integer, s::Semifield)
+    i < 0 && throw(ArgumentError("integer has to be positive or zero"))
+    iszero(i) && return zero(s)
+
+    res = zero(s)
+    for n in 1:i
+        res = res ⊕ s
+    end
+    res
+end
+Base.:*(s::Semifield, i::Integer) = i * s
+
+
+Base.convert(T::Type{<:Semifield}, x::Number) = T(x)
+
+Base.show(io::IO, x::Semifield) = print(io, val(x))
+

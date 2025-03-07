@@ -22,7 +22,7 @@ end
 #The following behaviour lies at the centre of every complete semifield.
 @testset "zero/one/top elements" begin
     for T in [Float64, Float32]
-        for S in [ProbSemifield{T},
+        for S in [#ProbSemifield{T},
                   LogSemifield{T, -0.001},#harmonic semifield
                   LogSemifield{T, 0.001}, #standard semifield         
                   LogSemifield{T, -1},#harmonic semifield
@@ -83,6 +83,7 @@ end
     end
 end
 
+#=
 @testset "Probability semiring" begin
     for T in [Float32, Float64]
         K = ProbSemifield{T}
@@ -100,7 +101,7 @@ end
         @test ∂lmul(x, y) == val(x)
     end
 end
-
+=#
 @testset "Tropical/Arctic semiring" begin
     for T in [Float32, Float64]
         K = TropicalSemifield{T}

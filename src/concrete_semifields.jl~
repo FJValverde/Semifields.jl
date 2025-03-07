@@ -1,0 +1,86 @@
+###############################################################################
+# Concrete semifield types.
+
+"""
+    struct BoolSemifield <: Semifield{Bool}
+        val::Bool
+    end
+
+Boolean semifield: ``\\langle \\{0, 1\\}, \\lor, \\land, 0, 1 \\rangle``.
+"""
+struct BoolSemifield <: Semifield{Bool}
+    val::Bool
+end
+
+⊕(x::BoolSemifield, y::BoolSemifield) = BoolSemifield(x.val || y.val)
+⊗(x::BoolSemifield, y::BoolSemifield) = BoolSemifield(x.val && y.val)
+Base.zero(::Type{<:BoolSemifield}) = BoolSemifield(false)
+Base.one(::Type{<:BoolSemifield}) = BoolSemifield(true)
+
+"""
+    struct LogSemifield{T,τ} <: Semifield{T}
+        val::T
+    end
+
+Logarithmic semifield: ``(\\mathbb{R} \\cup \\{- \\infty \\}, \\oplus_{\\log}, +, -\\infty, 0)``
+where
+
+```math
+x \\oplus y = \\frac{1}{\\tau} \\log ( e^{\tau x} + e^{\tau y} ).
+```
+"""
+struct LogSemifield{T<:AbstractFloat,τ} <: Semifield{T}
+    val::T
+end
+
+_logaddexp(τ, x, y) = inv(τ) * logaddexp(τ*x, τ*y)
+
+⊕(x::LogSemifield{T,τ}, y::LogSemifield{T,τ}) where {T,τ} = LogSemifield{T,τ}(_logaddexp(τ, val(x), val(y)))
+⊗(x::S, y::S) where S<:LogSemifield = S(val(x) + val(y))
+Base.zero(S::Type{<:LogSemifield{T,τ}}) where {T,τ} = S(ifelse(τ > 0, T(-Inf), T(Inf)))
+Base.one(S::Type{<:LogSemifield}) = S(0)
+
+∂sum(z::LogSemifield{T,τ}, x::LogSemifield{T,τ}) where {T,τ} =
+    val(z) == -Inf ? zero(T) : exp(τ*(val(x) - val(z)))
+∂rmul(x::S, a::S) where S<:LogSemifield = valtype(S)(1)
+∂lmul(a::S, x::S) where S<:LogSemifield = valtype(S)(1)
+
+"""
+    struct ProbSemifield{T<:AbstractFloat} <: Semifield{T}
+        val::T
+    end
+
+Probability semifield ``( (\\mathbb{R}_+``, +, \\cdot, 0, 1 )``.
+"""
+struct ProbSemifield{T<:AbstractFloat} <: Semifield{T}
+    val::T
+end
+
+⊕(x::ProbSemifield, y::ProbSemifield) = ProbSemifield(val(x) + val(y))
+⊗(x::ProbSemifield, y::ProbSemifield) = ProbSemifield(val(x) * val(y))
+Base.zero(S::Type{<:ProbSemifield{T}}) where T = S(zero(T))
+Base.one(S::Type{<:ProbSemifield{T}}) where T = S(one(T))
+
+∂sum(z::S, x::S) where S  = 1
+∂rmul(x::S, a::S) where S<:ProbSemifield = val(a)
+∂lmul(a::S, x::S) where S<:ProbSemifield = val(a)
+
+"""
+    const TropicalSemifield{T} = LogSemifield{T,-Inf} where T
+
+Tropical semifield: ``(\\mathbb{R} \\cup \\{- \\infty \\}, min, +, \\infty, 0)``.
+"""
+const TropicalSemifield{T} = LogSemifield{T,-Inf} where T
+⊕(x::S, y::S) where S<:TropicalSemifield = S(min(val(x), val(y)))
+
+∂sum(z::S, x::S) where S<:TropicalSemifield = valtype(S)(x == z)
+
+"""
+    const ArcticSemifield{T} = LogSemifield{T,Inf} where T
+
+Tropical semifield: ``\\langle \\mathbb{R} \\cup \\{\\infty \\}, max, +, -\\infty, 0 \\rangle``.
+"""
+const ArcticSemifield{T} = LogSemifield{T,Inf} where T
+⊕(x::S, y::S) where S<:ArcticSemifield = S(max(val(x), val(y)))
+
+∂sum(z::S, x::S) where S<:ArcticSemifield = valtype(S)(x == z)

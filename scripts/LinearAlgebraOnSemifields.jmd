@@ -1,0 +1,50 @@
+---
+Author: fva
+Date: 26/02/24
+---
+
+# Tests of Linear Algebra for some Semifields
+
+```julia
+using Semifields
+```
+
+# Example 3.4.3 from Butkovic, 2010.
+
+## Creating some data
+
+```julia
+S = TropicalSemifield{Float64}
+A = Matrix{S}(zero(S), 3,5)
+A = Array{S}(zero(S), 3,5)
+A = [ 1.0 1.0 2.0 -Inf 5.0;
+      1.0 0.0 4.0 1.0 5.0;
+      1.0 -Inf -1.0 1.0 0.0]
+mmpA = map(S,A)
+mmpAconj = inv(mmpA)
+Base.adjoint(A)= transpose(map(inv,A))
+adjointMmpA = adjoint(mmpA)
+adjointMmpA * mmpA
+# Transforming arrays (both matrices and vectors) to tropical/artic notation
+tropicalArray(A::Array{T}) where T <: AbstractFloat = TropicalSemifield{T}.(A)
+arcticArray(A::Array{T}) where T <: AbstractFloat = ArcticSemifield{T}.(A)
+mmp_v = tropicalArray([5.0, 5.0 ,6.0])
+mmp_A = tropicalArray(A)
+Base.transpose(a::Array{S}) where S <: Semifield = Transpose(a)
+mmp_tA = transpose(mmp_A)
+```
+There are no end of problems with having the elements int the Semifield type
+within the matrix.
+
+What could another approach be?
+
+# Another approach
+
+Let the semifield type also affect the matrix!!!
+
+Then we know that this is actually a semimodule over the semifield. 
+
+```julia
+TropicalSemifield{Matrix{Float64}}([ 1.0 2.0; 3.0 4.0])
+```
+
