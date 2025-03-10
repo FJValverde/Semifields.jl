@@ -1,10 +1,19 @@
-@doc raw"""
+# Main API.
+using ChainRulesCore
+import LogExpFunctions: logaddexp
+using Reexport
+@reexport using ..Semirings#This should not be needed, since Semirings is re-exported by Semifields.
+
+"""
     abstract type Semifield end
 
-Abstract type for a semifield ``(S, \oplus, \otimes, inv, zero, one, \top)``.
+Abstract type for a semifield ``(S, \\oplus, \\otimes, inv, zero, one, \\top)``.
 """
-abstract type Semifield{T} end
+abstract type Semifield{T} <: Semiring{T}
+end
 
+
+#=
 """
     val(x::Semifield) → T
 
@@ -33,7 +42,7 @@ Semifield addition.
 Semifield multiplication.
 """
 ⊗
-
+=#
 """
 
 Semifield inversion.
@@ -84,6 +93,7 @@ Base.:*(s::Semifield, i::Integer) = i * s
 #Also, this is only true in the commutative core of the Semiring, cfr. Golan on semimodules.
 
 """
+    convert(T::Type{<:Semifield}, x::Number) → Semifield
 Basic convert function for Semifields elements.
 """
 Base.convert(T::Type{<:Semifield}, x::Number) = T(x)
@@ -108,4 +118,45 @@ Base.isapprox(x::Semifield, y::Semifield) = val(x) ≈ val(y)
 Basic output primitive for semifield elements.
 """
 Base.show(io::IO, x::Semifield) = print(io, val(x))
+
+###############################################################################
+# Differentiation.
+
+"""
+    ∂sum(z, x)
+
+Compute the partial derivative of `z = x ⊕ y ⊕ z ⊕ ...` w.r.t. `x`.
+"""
+∂sum
+
+"""
+    ∂rmul(x, a)
+
+Compute the partial derivative of `x ⊗ a` w.r.t. `x`.
+"""
+∂rmul
+
+"""
+    ∂lmul(a, x)
+
+Compute the partial derivative of `a ⊗ x` w.r.t. `x`.
+"""
+∂lmul
+
+function ChainRulesCore.rrule(::typeof(val), a::Semifield)
+    b = val(a)
+    function val_pullback(b̄)
+        ZeroTangent(), Tangent{typeof(a)}(; val=b̄)
+    end
+    b, val_pullback
+end
+
+
+function ChainRulesCore.rrule(S::Type{<:Semifield}, a)
+    b = S(a)
+    function semifield_pullback(b̄)
+        ZeroTangent(), b̄.val
+    end
+    b, semifield_pullback
+end
 

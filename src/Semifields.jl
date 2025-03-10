@@ -6,79 +6,95 @@ A module to capture the concept of a semifield and provide its most notorious ex
 """
 module Semifields
 
+#FVA all main imports to locate them. 
+using Reexport
 using ChainRulesCore
 import LogExpFunctions: logaddexp
 
 export
-    # Main API.
-    ⊕, #\oplus
-    ⊗, #\otimes
-    #inv, #conjugation
-    top, 
-    val,
+    Semirings,#The base module on semirings.
+    GenericSemifields,#The module on generic semifields.
+    CompleteSemifields#The module on complete semifields.
+
+#FVA the following module is completely re-exported. 
+include("semirings.jl")#An in-house re-write of L.Ondel Yang's code. 
+
+#using Reexport
+#@reexport 
+module GenericSemifields#FVA: cannot be called Semimodules due to parent
+"""
+    GenericSemifields
+
+A module to define generic and concrete semifields. 
+"""
+
+export
+    #⊕, #\oplus#FVA: already defined on semirings.jl
+    #⊗, #\otimes#FVA: already defined on semirings.jl
+    inv, #conjugation
+    top, #this belongs to complete semifields. 
+    #val,#FVA: already defined on semirings.jl
+    #valtype,#FVA: already defined on semirings.jl
 
     # Partial derivative functions.
-    ∂sum,
-    ∂rmul,
-    ∂lmul,
+    #∂sum,#FVA: already defined on semirings.jl
+    #∂rmul,#FVA: already defined on semirings.jl
+    #∂lmul,#FVA: already defined on semirings.jl
 
     # Concrete types.
     Semifield,
-    ArcticSemifield,
     BoolSemifield,
-    LogSemifield,
-    # ProbSemifield,
+    EntropySemifield,
+    ArcticSemifield,
+    # ProbSemifield,#Aka Energy semiring, natural semiring, etc.
     TropicalSemifield
-
 
 ###############################################################################
 # Abstract semifield type.
 include("main_API.jl")
-
-
 ###############################################################################
 # Concrete semifield types.
 include("concrete_semifields.jl")
+end #module GenericSemifields
+#
+#FVA: the following shamelessly copies the matrixsemiring.jl file by L. Ondel.
+#module MatrixSemirings
 
-###############################################################################
-# Differentiation.
+#export MatrixSemiring, +, *
+#include("matrixsemiring.jl")#may be not needed!
 
-"""
-    ∂sum(z, x)
+#end
+#using Reexport
+#@reexport using .Semirings#defined in semirings.jl
 
-Compute the partial derivative of `z = x ⊕ y ⊕ z ⊕ ...` w.r.t. `x`.
-"""
-∂sum
-
-"""
-    ∂rmul(x, a)
-
-Compute the partial derivative of `x ⊗ a` w.r.t. `x`.
-"""
-∂rmul
-
-"""
-    ∂lmul(a, x)
-
-Compute the partial derivative of `a ⊗ x` w.r.t. `x`.
-"""
-∂lmul
-
-function ChainRulesCore.rrule(::typeof(val), a::Semifield)
-    b = val(a)
-    function val_pullback(b̄)
-        ZeroTangent(), Tangent{typeof(a)}(; val=b̄)
-    end
-    b, val_pullback
-end
-
-
-function ChainRulesCore.rrule(S::Type{<:Semifield}, a)
-    b = S(a)
-    function semifield_pullback(b̄)
-        ZeroTangent(), b̄.val
-    end
-    b, semifield_pullback
-end
+#Reexport.@reexport MatrixSemirings
+#export MatrixSemifield, +, *, inv, top
+#include("matrixsemifield.jl")
 
 end#module Semifields
+
+module CompleteSemifields
+"""
+    CompleteSemifields -- Complete Semifields
+
+A module to define complete semifields as pairs of two semifields
+related by inversion.
+"""
+#=
+
+export 
+    top, ⊤,
+    ⊥, #an alternate name for the bottom element. 
+
+    CompleteSemifield,#the basic abstract type.
+    TernaryCSemifield,#The basic semifield included in all the rest.
+    EntropyCSemifield,#The pair of semifields of logarithmic ranges.
+    MaxMinPlus,#The pair of semifields of tropical ranges.
+    #NaturalCSemifield,#The pair of semifields of natural ranges.
+    MaxMinTimes
+
+# CAVEAT! The complete Semifields are never subtypes of the 
+# concrete semifields
+include("CSemifields.jl")
+=#
+end

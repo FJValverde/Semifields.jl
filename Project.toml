@@ -5,11 +5,13 @@ version = "0.0.1"
 
 [deps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 LogExpFunctions = "2ab3a3ac-af41-5b50-aa03-7779005ae688"
-Semirings = "900aad66-9ca5-44d4-b043-321c62cb7767"
+Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 
 [compat]
 ChainRulesCore = "1.22.0"
+LinearAlgebra = "1.11.0"
 LogExpFunctions = "0.3.27"
-Semirings = "0.5.5"
+Reexport = "1.2.2"
 julia = "1.10.1"

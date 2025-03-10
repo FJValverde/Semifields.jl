@@ -1,6 +1,7 @@
+import ..Semirings: ⊕,⊗,val, valtype,∂sum,∂rmul,∂lmul
+
 ###############################################################################
 # Concrete semifield types.
-
 """
     struct BoolSemifield <: Semifield{Bool} <: Number
         val::Bool
@@ -88,11 +89,13 @@ function ChainRulesCore.rrule(::typeof(_logaddexp), b, x, y)
         else
             (NoTangent(), NoTangent(), exp(b*(x - z)) * z̄, exp(b*(y - z)) * z̄)
         end
+        #=
         if x == y == -Inf
             (NoTangent(), NoTangent(), 0, 0)
         else
             (NoTangent(), NoTangent(), exp(b*(x - z)) * z̄, exp(b*(y - z)) * z̄)
         end
+        =#
     end
     z, _logaddexp_pullback
 end
@@ -175,3 +178,12 @@ const ArcticSemifield{T} = LogSemifield{T,Inf} where T
 
 # WRONG after the original author of Semirings. 
 ∂sum(z::S, x::S) where S<:ArcticSemifield = valtype(S)(x == z)
+
+"""
+    MaxMinTimesSemifield{T} where T
+"""
+const MaxTimesSemifield{T} = LogSemifield{T,Inf} where T
+"""
+    MinTimesSemifield{T} where T
+"""
+const MinTimesSemifield{T} = LogSemifield{T,-Inf} where T
