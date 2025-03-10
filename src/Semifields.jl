@@ -71,30 +71,6 @@ end #module GenericSemifields
 #export MatrixSemifield, +, *, inv, top
 #include("matrixsemifield.jl")
 
-end#module Semifields
-
-module CompleteSemifields
-"""
-    CompleteSemifields -- Complete Semifields
-
-A module to define complete semifields as pairs of two semifields
-related by inversion.
-"""
-#=
-
-export 
-    top, ⊤,
-    ⊥, #an alternate name for the bottom element. 
-
-    CompleteSemifield,#the basic abstract type.
-    TernaryCSemifield,#The basic semifield included in all the rest.
-    EntropyCSemifield,#The pair of semifields of logarithmic ranges.
-    MaxMinPlus,#The pair of semifields of tropical ranges.
-    #NaturalCSemifield,#The pair of semifields of natural ranges.
-    MaxMinTimes
-
-# CAVEAT! The complete Semifields are never subtypes of the 
-# concrete semifields
 include("CSemifields.jl")
-=#
-end
+
+end#module Semifields
