@@ -19,44 +19,12 @@ export
 #FVA the following module is completely re-exported. 
 include("semirings.jl")#An in-house re-write of L.Ondel Yang's code. 
 
-#using Reexport
-#@reexport 
-module GenericSemifields#FVA: cannot be called Semimodules due to parent
-"""
-    GenericSemifields
+#FVA the following module is completely re-exported. 
+include("generic_semifields.jl")#A module to define generic semifields.
 
-A module to define generic and concrete semifields. 
-"""
+# The following module is completely re-exported.
+include("CSemifields.jl")#A module to define complete semifields.
 
-export
-    #⊕, #\oplus#FVA: already defined on semirings.jl
-    #⊗, #\otimes#FVA: already defined on semirings.jl
-    inv, #conjugation
-    top, #this belongs to complete semifields. 
-    #val,#FVA: already defined on semirings.jl
-    #valtype,#FVA: already defined on semirings.jl
-
-    # Partial derivative functions.
-    #∂sum,#FVA: already defined on semirings.jl
-    #∂rmul,#FVA: already defined on semirings.jl
-    #∂lmul,#FVA: already defined on semirings.jl
-
-    # Concrete types.
-    Semifield,
-    BoolSemifield,
-    EntropySemifield,
-    ArcticSemifield,
-    # ProbSemifield,#Aka Energy semiring, natural semiring, etc.
-    TropicalSemifield
-
-###############################################################################
-# Abstract semifield type.
-include("main_API.jl")
-###############################################################################
-# Concrete semifield types.
-include("concrete_semifields.jl")
-end #module GenericSemifields
-#
 #FVA: the following shamelessly copies the matrixsemiring.jl file by L. Ondel.
 #module MatrixSemirings
 
@@ -71,6 +39,5 @@ end #module GenericSemifields
 #export MatrixSemifield, +, *, inv, top
 #include("matrixsemifield.jl")
 
-include("CSemifields.jl")
 
 end#module Semifields
