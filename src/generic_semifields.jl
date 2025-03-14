@@ -1,6 +1,5 @@
-#using Reexport
-#@reexport 
-module GenericSemifields#FVA: cannot be called Semimodules due to parent
+using Reexport
+@reexport module GenericSemifields#FVA: cannot be called Semimodules due to parent
 """
     GenericSemifields
 
@@ -25,8 +24,8 @@ export
     BoolSemifield,
     EntropySemifield,
     ArcticSemifield,
-    # ProbSemifield,#Aka Energy semiring, natural semiring, etc.
     TropicalSemifield
+    # ProbSemifield,#Aka Energy semiring, natural semiring, etc.
 
 ###############################################################################
 # Abstract semifield type.

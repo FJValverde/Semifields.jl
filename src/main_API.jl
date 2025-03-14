@@ -44,7 +44,7 @@ Semifield multiplication.
 ⊗
 =#
 """
-
+    inv(x::Semifield) -> Semifield
 Semifield inversion.
 """
 inv

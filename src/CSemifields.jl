@@ -1,4 +1,5 @@
-module CompleteSemifields
+using Reexport
+@reexport module CompleteSemifields
 """
     CompleteSemifields -- Complete Semifields
 

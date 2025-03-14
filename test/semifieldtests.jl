@@ -1,3 +1,5 @@
+using ..GenericSemifields
+using Test
 @testset "Boolean semifield" begin
     x, y = one(BoolSemifield), zero(BoolSemifield)
     @test valtype(typeof(x)) == Bool
@@ -17,10 +19,10 @@ end
 @testset "zero/one/top elements" begin
     for T in [Float64, Float32]
         for S in [#ProbSemifield{T},
-                  LogSemifield{T, -0.001},#harmonic semifield
-                  LogSemifield{T, 0.001}, #standard semifield         
-                  LogSemifield{T, -1},#harmonic semifield
-                  LogSemifield{T, 1}, #standard semifield
+                  EntropySemifield{T, -0.001},#harmonic semifield
+                  EntropySemifield{T, 0.001}, #standard semifield         
+                  EntropySemifield{T, -1},#harmonic semifield
+                  EntropySemifield{T, 1}, #standard semifield
                   TropicalSemifield{T},
                   ArcticSemifield{T}
                   ]
@@ -43,8 +45,8 @@ end
 
 @testset "Logarithmic semiring" begin
     for T in [Float64, Float32]
-        for a in [1, 4.5]
-            K = LogSemifield{T,a}
+        for a in [1.0, 4.5]
+            K = EntropySemifield{T,a}
             x, y = K(2), K(3)
             @test valtype(typeof(x)) == T
             @test val(x ⊕ y) ≈ logaddexp(a*val(x), a*val(y)) / a
@@ -61,8 +63,8 @@ end
             @test iszero(x̄) && iszero(ȳ)
         end
 
-        for a in [-1, -4.5]
-            K = LogSemifield{T,a}
+        for a in [-1.0, -4.5]
+            K = EntropySemifield{T,a}
             x, y = K(2), K(3)
             @test valtype(typeof(x)) == T
             @test val(x ⊕ y) ≈ logaddexp(a*val(x), a*val(y)) / a
@@ -125,13 +127,13 @@ end
 end
 
 @testset "conversion" begin
-    for S in [TropicalSemifield{Float32}, LogSemifield{Float64, -1}]
+    for S in [TropicalSemifield{Float32}, EntropySemifield{Float64, -1}]
         @test all(S[1, 2, 3] .== [S(1), S(2), S(3)])
     end
 end
 
 @testset "integer multiplication" begin
-    for S in [TropicalSemifield{Float32}, LogSemifield{Float64, 2.1}]
+    for S in [TropicalSemifield{Float32}, EntropySemifield{Float64, 2.1}]
         x = S(2.3)
 
         @test val(3 * x) ≈ val(x ⊕ x ⊕ x)

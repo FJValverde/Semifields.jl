@@ -22,11 +22,11 @@ top(::Type{<:BoolSemifield}) = BoolSemifield(true)
 Base.inv(x::Type{<:BoolSemifield}) = BoolSemifield(!x.val)
 
 """
-    struct LogSemifield{T,τ} <: Semifield{T}
+    struct EntropySemifield{T,τ} <: Semifield{T}
         val::T
     end
 
-Logarithmic semifield: ``(\\mathbb{R} \\cup \\{- \\infty \\}, \\oplus_{\\log}, +, -\\infty, 0)``
+Entropic semifields: ``(\\mathbb{R} \\cup \\{- \\infty \\}, \\oplus_{\\log}, +, -\\infty, 0)``
 where ``\\tau\\belongs\\overline\\mathbb{R}`` and ``\\oplus_{\\log}`` is the log-sum-exp operation:
 ```math
 x \\oplus y = \\frac{1}{\\tau} \\log ( e^{\\tau x} + e^{\\tau y} ).
@@ -34,46 +34,46 @@ x \\oplus y = \\frac{1}{\\tau} \\log ( e^{\\tau x} + e^{\\tau y} ).
 Note that ``\\tau \\neq 0'' and that ``\\tau < 0'' makes is a *cost* semifield, while
 ``\\tau > 0'' makes a *utility* semifield.
 """
-struct LogSemifield{T<:AbstractFloat,τ} <: Semifield{T} 
+struct EntropySemifield{T<:AbstractFloat,τ} <: Semifield{T} 
     val::T
 end
 
 _logaddexp(τ, x, y) = inv(τ) * logaddexp(τ*x, τ*y)#operations in floats. 
 #The inversion here is the reason why τ cannot be zero.
 
-function ⊕(x::LogSemifield{T,τ}, y::LogSemifield{T,τ}) where {T,τ}
+function ⊕(x::EntropySemifield{T,τ}, y::EntropySemifield{T,τ}) where {T,τ}
     iszero(x) && return y#early termination
     iszero(y) && return x#early termination
-    #( x == zero(LogSemifield{T,τ}) ? y :
-    #( y == zero(LogSemifield{T,τ}) ? x :
-    return(LogSemifield{T,τ}(_logaddexp(τ, val(x), val(y))))
+    #( x == zero(EntropySemifield{T,τ}) ? y :
+    #( y == zero(EntropySemifield{T,τ}) ? x :
+    return(EntropySemifield{T,τ}(_logaddexp(τ, val(x), val(y))))
 end
 
 
-function ⊗(x::S, y::S) where S<:LogSemifield
+function ⊗(x::S, y::S) where S<:EntropySemifield
     iszero(x) && return x#early termination
     iszero(y) && return y#early termination
     return S(val(x) + val(y))
     #(x == zero(S) ? x : (y == zero(S) ? y : S(val(x) + val(y))))
 end
 
-Base.inv(x::S) where S<:LogSemifield = S(-val(x))
-#Base.inv(x::LogSemifield{T,τ}) where {T,τ}  = LogSemifield{T,τ}(-val(x))
+Base.inv(x::S) where S<:EntropySemifield = S(-val(x))
+#Base.inv(x::EntropySemifield{T,τ}) where {T,τ}  = EntropySemifield{T,τ}(-val(x))
 
-function Base.zero(S::Type{<:LogSemifield{T,τ}}) where {T,τ}
+function Base.zero(S::Type{<:EntropySemifield{T,τ}}) where {T,τ}
     iszero(τ) && throw(ArgumentError("Rényi parameter has to be nonzero"))
     S(τ > 0.0 ? T(-Inf) : T(Inf))
 end
-#Base.zero(S::Type{<:LogSemifield{T,τ}}) where {T,τ} = S(ifelse(τ > 0, T(-Inf), T(Inf)))
+#Base.zero(S::Type{<:EntropySemifield{T,τ}}) where {T,τ} = S(ifelse(τ > 0, T(-Inf), T(Inf)))
 
-Base.one(S::Type{<:LogSemifield{T,τ}}) where {T,τ}  = S(zero(T))
+Base.one(S::Type{<:EntropySemifield{T,τ}}) where {T,τ}  = S(zero(T))
 
 """
-    top(S::Type{<:LogSemifield{T,τ}}) where {T,τ}
+    top(S::Type{<:EntropySemifield{T,τ}}) where {T,τ}
 
 Defined as the inverse of the zero.
 """
-top(S::Type{<:LogSemifield{T,τ}}) where {T,τ} = S(τ > 0 ? T(Inf) : T(-Inf))
+top(S::Type{<:EntropySemifield{T,τ}}) where {T,τ} = S(τ > 0 ? T(Inf) : T(-Inf))
 
 function ChainRulesCore.rrule(::typeof(_logaddexp), b, x, y)
     z = _logaddexp(b, x, y)
@@ -100,11 +100,11 @@ function ChainRulesCore.rrule(::typeof(_logaddexp), b, x, y)
     z, _logaddexp_pullback
 end
     
-∂sum(z::LogSemifield{T,τ}, x::LogSemifield{T,τ}) where {T,τ} =
+∂sum(z::EntropySemifield{T,τ}, x::EntropySemifield{T,τ}) where {T,τ} =
     #val(z) == -Inf ? zero(T) : exp(τ*(val(x) - val(z)))
-    z == zero(LogSemifield{T,τ}) ? zero(T) : exp(τ*(val(x) - val(z)))
-∂rmul(x::S, a::S) where S<:LogSemifield = valtype(S)(1)
-∂lmul(a::S, x::S) where S<:LogSemifield = valtype(S)(1)
+    z == zero(EntropySemifield{T,τ}) ? zero(T) : exp(τ*(val(x) - val(z)))
+∂rmul(x::S, a::S) where S<:EntropySemifield = valtype(S)(1)
+∂lmul(a::S, x::S) where S<:EntropySemifield = valtype(S)(1)
 
 #=
 # This probability semifield has problem. It is better to use the analog of max-min-times. 
@@ -154,26 +154,26 @@ top(S::Type{<:ProbSemifield}) = S(Inf)
 =#
 
 """
-    const TropicalSemifield{T} = LogSemifield{T,-Inf} where T
+    const TropicalSemifield{T} = EntropySemifield{T,-Inf} where T
 
-Tropical semifield: ``(\\mathbb{R} \\cup \\{- \\infty \\}, min, +, \\infty, 0)``.
+Tropical or min-plus semifield: ``(\\mathbb{R} \\cup \\{- \\infty \\}, min, +, \\infty, 0)``.
 
-This is the Logexp semifielf with ``\\tau = -\\infty``.
+This is the Entropy semifield with ``\\tau = -\\infty``.
 """
-const TropicalSemifield{T} = LogSemifield{T,-Inf} where T
+const TropicalSemifield{T} = EntropySemifield{T,-Inf} where T
 
 ⊕(x::S, y::S) where S<:TropicalSemifield = S(min(val(x), val(y)))
 
 ∂sum(z::S, x::S) where S<:TropicalSemifield = valtype(S)(x == z)
 
 """
-    const ArcticSemifield{T} = LogSemifield{T,Inf} where T
+    const ArcticSemifield{T} = EntropySemifield{T,Inf} where T
 
-Tropical semifield: ``\\langle \\mathbb{R} \\cup \\{\\infty \\}, max, +, -\\infty, 0 \\rangle``.
-This is the Logexp semifielf with ``\\tau = \\infty``.
+Arctic or max-plus semifield: ``\\langle \\mathbb{R} \\cup \\{\\infty \\}, max, +, -\\infty, 0 \\rangle``.
+This is the EntropySemifield with ``\\tau = \\infty``.
 
 """
-const ArcticSemifield{T} = LogSemifield{T,Inf} where T
+const ArcticSemifield{T} = EntropySemifield{T,Inf} where T
 ⊕(x::S, y::S) where S<:ArcticSemifield = S(max(val(x), val(y)))
 
 # WRONG after the original author of Semirings. 
@@ -182,8 +182,8 @@ const ArcticSemifield{T} = LogSemifield{T,Inf} where T
 """
     MaxMinTimesSemifield{T} where T
 """
-const MaxTimesSemifield{T} = LogSemifield{T,Inf} where T
+const MaxTimesSemifield{T} = EntropySemifield{T,Inf} where T
 """
     MinTimesSemifield{T} where T
 """
-const MinTimesSemifield{T} = LogSemifield{T,-Inf} where T
+const MinTimesSemifield{T} = EntropySemifield{T,-Inf} where T
