@@ -18,7 +18,7 @@ end
 Base.zero(::Type{<:BoolSemifield}) = BoolSemifield(false)
 Base.one(::Type{<:BoolSemifield}) = BoolSemifield(true)
 top(::Type{<:BoolSemifield}) = BoolSemifield(true)
-
+#⊤::Type{BoolSemifield} = top(::Type{BoolSemifield})
 Base.inv(x::Type{<:BoolSemifield}) = BoolSemifield(!x.val)
 
 """
@@ -49,13 +49,16 @@ function ⊕(x::EntropySemifield{T,τ}, y::EntropySemifield{T,τ}) where {T,τ}
     return(EntropySemifield{T,τ}(_logaddexp(τ, val(x), val(y))))
 end
 
-
+#=
 function ⊗(x::S, y::S) where S<:EntropySemifield
     iszero(x) && return x#early termination
     iszero(y) && return y#early termination
     return S(val(x) + val(y))
     #(x == zero(S) ? x : (y == zero(S) ? y : S(val(x) + val(y))))
 end
+=#
+⊗(x::S, y::S) where S<:EntropySemifield =
+    (x == zero(S) ? x : (y == zero(S) ? y : S(val(x) + val(y))))
 
 Base.inv(x::S) where S<:EntropySemifield = S(-val(x))
 #Base.inv(x::EntropySemifield{T,τ}) where {T,τ}  = EntropySemifield{T,τ}(-val(x))
@@ -161,10 +164,17 @@ Tropical or min-plus semifield: ``(\\mathbb{R} \\cup \\{- \\infty \\}, min, +, \
 This is the Entropy semifield with ``\\tau = -\\infty``.
 """
 const TropicalSemifield{T} = EntropySemifield{T,-Inf} where T
+const MinPlusSemifield{T} = TropicalSemifield{T} where T
 
 ⊕(x::S, y::S) where S<:TropicalSemifield = S(min(val(x), val(y)))
-
+⊗(x::S, y::S) where S<:TropicalSemifield = S(val(x) + val(y))
+Base.zero(S::Type{<:TropicalSemifield{T}}) where T = S(Inf)
+Base.one(S::Type{<:TropicalSemifield{T}}) where T = S(zero(T))
+top(S::Type{<:TropicalSemifield{T}}) where T = S(Inf)
+Base.inv(x::S) where S<:TropicalSemifield = S(-val(x))
 ∂sum(z::S, x::S) where S<:TropicalSemifield = valtype(S)(x == z)
+∂rmul(x::S, a::S) where S<:TropicalSemifield = valtype(S)(1)#FVA: not sure of this
+∂lmul(a::S, x::S) where S<:TropicalSemifield = valtype(S)(1)#FVA: not sure of this
 
 """
     const ArcticSemifield{T} = EntropySemifield{T,Inf} where T
@@ -174,16 +184,67 @@ This is the EntropySemifield with ``\\tau = \\infty``.
 
 """
 const ArcticSemifield{T} = EntropySemifield{T,Inf} where T
+const MaxPlusSemifield{T} = ArcticSemifield{T} where T
 ⊕(x::S, y::S) where S<:ArcticSemifield = S(max(val(x), val(y)))
+⊗(x::S, y::S) where S<:ArcticSemifield = S(val(x) + val(y))
+Base.zero(S::Type{<:ArcticSemifield{T}}) where T = S(-Inf)
+Base.one(S::Type{<:ArcticSemifield{T}}) where T = S(zero(T))
+top(S::Type{<:ArcticSemifield{T}}) where T = S(-Inf)
+Base.inv(x::S) where S<:ArcticSemifield = S(-val(x))
+∂sum(z::S, x::S) where S<:ArcticSemifield = valtype(S)(x == z)#FVA:  WRONG after the original author of Semirings. 
+∂rmul(x::S, a::S) where S<:ArcticSemifield = valtype(S)(1)#FVA: not sure of this
+∂lmul(a::S, x::S) where S<:ArcticSemifield = valtype(S)(1)#FVA: not sure of this
 
-# WRONG after the original author of Semirings. 
-∂sum(z::S, x::S) where S<:ArcticSemifield = valtype(S)(x == z)
+
+"""
+struct EnergySemifield{T<:AbstractFloat,τ} <: Semifield{T} 
+    val::T
+end
+
+The deformed energy semifields. Their sum is essentially the Hölder average.
+"""
+struct EnergySemifield{T<:AbstractFloat,τ} <: Semifield{T} 
+    val::T
+end
+
+_holderaverage(t,x,y) = (x^t + y^t)^(1/t)#Clearly this involves some type of Float.
+
+function ⊕(x::EnergySemifield{T,τ}, y::EnergySemifield{T,τ}) where {T,τ}
+    iszero(x) && return y#early termination
+    iszero(y) && return x#early termination
+    #( x == zero(EntropySemifield{T,τ}) ? y :
+    #( y == zero(EntropySemifield{T,τ}) ? x :
+    return(EnergySemifield{T,τ}(_holderaverage(τ, val(x), val(y))))
+end
+⊗(x::S, y::S) where S<:EnergySemifield = S(val(x) * val(y))
+Base.inv(x::S) where S<:EnergySemifield = S(inv(val(x)))
+Base.zero(S::Type{<:EnergySemifield{T,τ}}) where {T,τ} = S(zero(T))
+Base.one(S::Type{<:EnergySemifield{T,τ}}) where {T,τ} = S(one(T))
+top(S::Type{<:EnergySemifield{T,τ}}) where {T,τ} = S(Inf)
+∂sum(z::EnergySemifield{T,τ}, x::EnergySemifield{T,τ}) where {T,τ} =
+    z == zero(EnergySemifield{T,τ}) ? zero(T) : τ * (val(x)^(τ - 1)) * val(z)#FVA: not sure of this
+∂rmul(x::S, a::S) where S<:EnergySemifield = val(a)#FVA: not sure of this
+∂lmul(a::S, x::S) where S<:EnergySemifield = val(a)#FVA: not sure of this
+
 
 """
     MaxMinTimesSemifield{T} where T
+
+A complete energy semifield with τ = ∞.
 """
-const MaxTimesSemifield{T} = EntropySemifield{T,Inf} where T
+const MaxTimesSemifield{T} = EnergySemifield{T,Inf} where T
+⊕(x::S, y::S) where S<:MaxTimesSemifield = S(max(val(x), val(y)))
+Base.zero(S::Type{<:MaxTimesSemifield{T}}) where T = S(-Inf)
+Base.one(S::Type{<:MaxTimesSemifield{T}}) where T = S(zero(T))
+top(S::Type{<:MaxTimesSemifield{T}}) where T = S(-Inf)
+
 """
     MinTimesSemifield{T} where T
+
+A complete energy semifield with \tau = -∞.
 """
-const MinTimesSemifield{T} = EntropySemifield{T,-Inf} where T
+const MinTimesSemifield{T} = EnergySemifield{T,-Inf} where T
+⊕(x::S, y::S) where S<:MinTimesSemifield = S(min(val(x), val(y)))
+Base.zero(S::Type{<:MinTimesSemifield{T}}) where T = S(Inf)
+Base.one(S::Type{<:MinTimesSemifield{T}}) where T = S(zero(T))
+top(S::Type{<:MinTimesSemifield{T}}) where T = S(Inf)

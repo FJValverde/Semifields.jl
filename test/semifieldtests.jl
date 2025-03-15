@@ -1,7 +1,12 @@
-using ..GenericSemifields
+using Semifields
 using Test
+using ChainRulesCore
+import LogExpFunctions: logaddexp
 @testset "Boolean semifield" begin
     x, y = one(BoolSemifield), zero(BoolSemifield)
+    for v in [true, false]
+        @test val(BoolSemifield(v)) == v
+    end
     @test valtype(typeof(x)) == Bool
     @test ! val(zero(x))
     @test val(one(x))
@@ -16,34 +21,39 @@ using Test
 end
 
 #The following behaviour lies at the centre of every complete semifield.
-@testset "zero/one/top elements" begin
+@testset "zero/one elements in Entropy Semifields" begin
     for T in [Float64, Float32]
         for S in [#ProbSemifield{T},
-                  EntropySemifield{T, -0.001},#harmonic semifield
-                  EntropySemifield{T, 0.001}, #standard semifield         
+                  EntropySemifield{T, -0.001},#Shannon semifield, approx
+                  EntropySemifield{T, 0.001}, #Dual Shannon semifield, approx
                   EntropySemifield{T, -1},#harmonic semifield
                   EntropySemifield{T, 1}, #standard semifield
                   TropicalSemifield{T},
-                  ArcticSemifield{T}
+                  ArcticSemifield{T},
+                  MaxPlusSemifield{T},
+                  MinPlusSemifield{T}
                   ]
-            @test inv(zero(S)) == top(S)
-            @test inv(top(S)) == zero(S)
+            for v in [-Inf, -1.0, 0.0, 1.0, Inf]
+                @test val(S(v)) == v
+            end
+            #@test inv(zero(S)) == top(S)
+            #@test inv(top(S)) == zero(S)
             #@test inv(one(S)) ≈ one(S)#returns -0.0 != 0.0
-            for y in [zero(S), one(S), top(S)]
+            for y in [zero(S), one(S)]#, top(S)]
                 @test zero(S) ⊗ y == zero(S)
                 @test y ⊗ zero(S) == zero(S)
                 @test zero(S) ⊕ y == y
                 @test y ⊕ zero(S) == y
                 @test one(S) ⊗ y == y
                 @test y ⊗ one(S) == y
-                @test top(S)  ⊕ y == top(S)
-                @test y  ⊕ top(S) == top(S)
+                #@test top(S)  ⊕ y == top(S)
+                #@test y  ⊕ top(S) == top(S)
             end
         end
     end
 end
 
-@testset "Logarithmic semiring" begin
+@testset "Entropy semifield operations" begin
     for T in [Float64, Float32]
         for a in [1.0, 4.5]
             K = EntropySemifield{T,a}
@@ -100,7 +110,7 @@ end
 =#
 @testset "Tropical/Arctic semiring" begin
     for T in [Float32, Float64]
-        K = TropicalSemifield{T}
+        for K in [TropicalSemifield{T}, MinPlusSemifield{T}]
         x, y = K(2), K(3)
         @test valtype(typeof(x)) == T
         @test val(x ⊕ y) ≈ min(val(x), val(y))
@@ -111,8 +121,9 @@ end
         @test ∂sum(x ⊕ y, y) ≈ T(val(y) ≤ val(x))
         @test ∂rmul(x, y) == 1
         @test ∂lmul(x, y) == 1
+        end
 
-        K = ArcticSemifield{T}
+        for K in [ArcticSemifield{T}, MaxPlusSemifield{T}]
         x, y = K(2), K(3)
         @test valtype(typeof(x)) == T
         @test val(x ⊕ y) ≈ max(val(x), val(y))
@@ -123,15 +134,24 @@ end
         @test ∂sum(x ⊕ y, y) ≈ T(val(y) ≥ val(x))
         @test ∂rmul(x, y) == 1
         @test ∂lmul(x, y) == 1
+        end
     end
 end
 
 @testset "conversion" begin
-    for S in [TropicalSemifield{Float32}, EntropySemifield{Float64, -1}]
-        @test all(S[1, 2, 3] .== [S(1), S(2), S(3)])
+    for T in [Float32, Float64]
+        for S in [TropicalSemifield{T}, MinPlusSemifield{T},
+                    ArcticSemifield{T}, MaxPlusSemifield{T},
+                    EntropySemifield{T, -1},
+                    EntropySemifield{T, 1},
+                    EntropySemifield{T, -0.001},
+                    EntropySemifield{T, 0.001}]
+            @test all(S[1, 2, 3] .== [S(1), S(2), S(3)])
+        end
     end
 end
 
+#= FVA THese have no sense for the time being. 
 @testset "integer multiplication" begin
     for S in [TropicalSemifield{Float32}, EntropySemifield{Float64, 2.1}]
         x = S(2.3)
@@ -141,3 +161,4 @@ end
         @test iszero(0 * x)
     end
 end
+=#

@@ -1,4 +1,7 @@
 # Semifields.jl
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/FJValverde/Semifields.jl/blob/main/LICENSE)
+
 A ménagerie of semifields: semirings with a multiplicative group instead of a dioid. E.g. the tropical algebras, the algebra of probabilities, the entropic algebras, etc.
 
 **NOTE** This repository supersedes [CompleteSemifields.jl](https://github.com/FJValverde/CompleteSemifields.jl), which is now deprecated.

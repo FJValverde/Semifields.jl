@@ -89,6 +89,7 @@ The multiplicative unit element in the semiring.
 """ 
 Base.one(x::Semiring) = one(typeof(x))
 
+#=
 """
     Base.:⊗(i::Integer, s::Semiring) → Semiring
 
@@ -106,7 +107,7 @@ A commutative multiplication by integers, not really know where it leads to.
     #res
 #end
 #Base.:⊗(s::Semiring, i::Integer) = i ⊗ s
-
+=#
 
 """
     Base.convert(T::Type{<:Semiring}, x::Number)
@@ -116,6 +117,11 @@ TBW
 Base.convert(T::Type{<:Semiring}, x::Number) = T(x)
 Base.convert(T::Type{<:Semiring}, x::Semiring) = T(x.val)
 
+"""
+    Base.show(io::IO, x::Semiring)
+
+Print the value wrapped by the semiring.
+"""
 Base.show(io::IO, x::Semiring) = print(io, val(x))
 
 
@@ -183,13 +189,16 @@ _logaddexp(τ, x, y) = inv(τ) * logaddexp(τ*x, τ*y)
 
 Information addition in the entropy semiring. τ is the Rényi parameter.
 """
-⊕(x::EntropySemiring{T,τ}, y::EntropySemiring{T,τ}) where {T,τ} = EntropySemiring{T,τ}(_logaddexp(τ, val(x), val(y)))
+⊕(x::EntropySemiring{T,τ}, y::EntropySemiring{T,τ}) where {T,τ} = 
+    EntropySemiring{T,τ}(_logaddexp(τ, val(x), val(y)))
+
 """
     x ⊗ y -> EntropySemiring{T,τ}
 
 Information multiplication in the entropy semiring. Does not depend on τ.
 """
-⊗(x::EntropySemiring{T,τ}, y::EntropySemiring{T,τ}) where {T,τ} = EntropySemiring{T,τ}(val(x) + val(y))
+⊗(x::EntropySemiring{T,τ}, y::EntropySemiring{T,τ}) where {T,τ} = 
+    EntropySemiring{T,τ}(val(x) + val(y))
 ⊗(x::S, y::S) where S<:EntropySemiring = S(val(x) + val(y))
 
 """

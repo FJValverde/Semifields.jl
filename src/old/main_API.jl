@@ -12,6 +12,18 @@ Abstract type for a semifield ``(S, \\oplus, \\otimes, inv, zero, one, \\top)``.
 abstract type Semifield{T} <: Semiring{T}
 end
 
+"""
+    Base.convert(T::Type{<:Semifield}, x::Number)
+
+Type conversion for Semifield elements from Numbers and subtypes of semifields.
+"""
+Base.convert(T::Type{<:Semifield}, x::Number) = T(x)
+Base.convert(T::Type{<:Semifield}, x::Semifield) = T(x.val)#THis should be done with care!
+# For instance, BoolSemifield is not a subtype of EntropySemifield, so the second conversion
+# does not make sense!.
+
+"""
+    val(x::Semifield) → T
 
 #=
 """

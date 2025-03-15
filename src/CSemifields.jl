@@ -7,12 +7,12 @@ A module to define complete semifields as pairs of two semifields
 related by inversion.
 """
 
-export 
-    top, ⊤,
+export top, # the top element of the complete semifield.
+    ⊤,# an alternate name for the top element.
     ⊥, #an alternate name for the bottom element. 
 
     CompleteSemifield,#the basic abstract type.
-    TernaryCSemifield#The basic semifield included in all the rest.
+    TernarySemifield#The basic semifield included in all the rest.
 #=
     EntropyCSemifield,#The pair of semifields of logarithmic ranges.
     MaxMinPlus,#The pair of semifields of tropical ranges.
@@ -28,7 +28,7 @@ export
 #@reexport using ..Semifields#This should not be needed, since Semirings is re-exported by Semifields.
 
 import ..Semirings: ⊕,⊗,val, valtype,∂sum,∂rmul,∂lmul, Semiring
-import ..GenericSemifields: Semifield
+#import ..GenericSemifields: Semifield
 
 """
     CompleteSemifield
@@ -41,7 +41,24 @@ abstract type CompleteSemifield{T} <: Semifield{T}
 end
 
 """
+        Overload the ''top'' unary constructor to work on elements as well as on types. 
+"""
+top(x::Semifield) = top(typeof(x))
+
+"""
+    convert(T::Type{<:CompleteSemifield}, x::Number) → CompleteSemifield
+
+Basic convert function for Semifields elements.
+"""
+Base.convert(T::Type{<:CompleteSemifield}, x::Number) = T(x)
+Base.convert(T::Type{<:CompleteSemifield}, x::Semifield) = T(val(x))
+
+"""
     TernarySemifield <: CompleteSemifield{Some(Bool)}
+
+This is not quite the same as the BoolSemifield, that is already a complete 
+semifield. It is enriched with a "middle" element that is not manifested, actually, 
+as showing "no polarity" in the ternary logic. 
 """
 struct TernarySemifield <: CompleteSemifield{Some{Bool}}
     val::Some{Bool}
