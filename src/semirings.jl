@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: CECILL-2.1
-using Reexport
-@reexport module Semirings
+#using Reexport
+#@reexport 
+module Semirings
 """
     Semirings   
 
@@ -22,6 +23,11 @@ export
     ∂sum,
     ∂rmul,
     ∂lmul,
+
+    #auxiliary functions for the entropic and energetic semifields
+    # Don't export them, but import them explicitly in client modules.
+    _logaddexp,
+    _holderaverage,
 
     # Concrete types.
     Semiring,
@@ -248,14 +254,28 @@ const ArcticSemiring{T} = EntropySemiring{T,Inf} where T
 
 Energy semiring ``( (\\mathbb{R}_+``, +, \\cdot, 0, 1 )``.
 """
-struct EnergySemiring{T<:AbstractFloat} <: Semiring{T}
+struct EnergySemiring{T<:AbstractFloat,τ} <: Semiring{T}
     val::T
 end
 
-⊕(x::EnergySemiring, y::EnergySemiring) = EnergySemiring(val(x) + val(y))
-⊗(x::EnergySemiring, y::EnergySemiring) = EnergySemiring(val(x) * val(y))
-Base.zero(S::Type{<:EnergySemiring{T}}) where T = S(zero(T))
-Base.one(S::Type{<:EnergySemiring{T}}) where T = S(one(T))
+_holderaverage(τ,x,y) = (x^τ + y^τ)^(1/τ)#Clearly this involves some type of Float.
+#FVA: overload for longer sums
+
+function ⊕(x::EnergySemiring{T,τ}, y::EnergySemiring{T,τ}) where {T,τ}
+    iszero(x) && return y#early termination
+    iszero(y) && return x#early termination
+    #( x == zero(EntropySemifield{T,τ}) ? y :
+    #( y == zero(EntropySemifield{T,τ}) ? x :
+    return(EnergySemiring{T,τ}(_holderaverage(τ, val(x), val(y))))
+end
+⊗(x::S, y::S) where S<:EnergySemiring = S(val(x) * val(y))
+Base.zero(S::Type{<:EnergySemiring{T,τ}}) where {T,τ} = S(zero(T))
+Base.one(S::Type{<:EnergySemiring{T,τ}}) where {T,τ} = S(one(T))
+
+#⊕(x::EnergySemiring, y::EnergySemiring) = EnergySemiring(val(x) + val(y))
+#⊗(x::EnergySemiring, y::EnergySemiring) = EnergySemiring(val(x) * val(y))
+#Base.zero(S::Type{<:EnergySemiring{T}}) where T = S(zero(T))
+#Base.one(S::Type{<:EnergySemiring{T}}) where T = S(one(T))
 
 ∂sum(z::S, x::S) where S  = 1#one(S)
 ∂rmul(x::S, a::S) where S<:EnergySemiring = val(a)
