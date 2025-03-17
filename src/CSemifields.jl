@@ -14,10 +14,10 @@ export top, # the top element of the complete semifield.
 
     CSemifield,#the basic abstract type of Complete(d) semifields.
     TernaryCSemifield,#The basic semifield included in all the rest.
-    EntropyCSemifield#The pair of semifields of logarithmic ranges.
+    EntropyCSemifield,#The pair of semifields of logarithmic ranges.
+    TropicalCSemifield, MinPlusCSemifield,#The pair of semifields of min-plus ranges.
+    ArcticCSemifield, MaxPlusCSemifield#The pair of semifields of max-plus ranges.
 #=
-    MaxMinPlus,#The pair of semifields of tropical ranges.
-    #NaturalCSemifield,#The pair of semifields of natural ranges.
     MaxMinTimes
 =#
 # CAVEAT! The complete Semifields are never subtypes of the 
@@ -36,7 +36,7 @@ import Semifields: Semifield, EntropySemifield
 """
     CSemifield{T} <: Semifield{T}
 """
-abstract type CSemifield{T} <: Semifield{T}
+abstract type CSemifield{T} <: Semifield{T} 
 end
 
 """
@@ -46,17 +46,17 @@ end
 
 Visual notation for top(⊤, \\top), bottom(⊥, \\bot) and unit (⌶, \\topbot) elements of the semifield.
 """
-⊤(T::Type{<:CSemifield}) = top(T)
-⊥(T::Type{<:CSemifield}) = zero(T)
-⌶(T::Type{<:CSemifield}) = one(T)
+⊤(S::Type{<:CSemifield}) = top(S)
+⊥(S::Type{<:CSemifield}) = zero(S)
+⌶(S::Type{<:CSemifield}) = one(S)
 
 """
-    convert(T::Type{<:CSemifield}, x::Number) → CSemifield
+    convert(S::Type{<:CSemifield}, x::Number) → CSemifield
 
 Basic convert function for Semifields elements.
 """
-Base.convert(T::Type{<:CSemifield}, x::Number) = T(x)#For Number types
-Base.convert(T::Type{<:CSemifield}, x::CSemifield) = T(val(x))#For subtypes of semifields.
+Base.convert(S::Type{<:CSemifield}, x::Number) = S(x)#For Number types
+Base.convert(S::Type{<:CSemifield}, x::CSemifield) = S(val(x))#For subtypes of semifields.
 
 
 #=
@@ -205,5 +205,45 @@ function ⊗(x::S, y::S) where S<:EntropyCSemifield
     y == zero(S) ? y : 
     S(val(x) + val(y))
 end #module 
+
+"""
+    const TropicalCSemifield{T} = EntropyCSemifield{T,-Inf} where T
+
+Completed tropical or min-plus semifield: ``(\\mathbb{R} \\cup \\{- \\infty \\}, min, +, \\infty, 0, -\\infty)``.
+
+This is the completed entropy semifield with ``\\tau = -\\infty``.
+"""
+const TropicalCSemifield{T} = EntropyCSemifield{T,-Inf} where T
+const MinPlusCSemifield{T} = TropicalCSemifield{T} where T
+
+⊕(x::S, y::S) where S<:TropicalCSemifield = S(min(val(x), val(y)))
+#⊗(x::S, y::S) where S<:TropicalCSemifield = S(val(x) + val(y))#Not changed from the original
+Base.zero(S::Type{<:TropicalCSemifield{T}}) where T = S(Inf)#Shorter than the original
+#Base.one(S::Type{<:TropicalCSemifield{T}}) where T = S(zero(T))#Not changed from the original
+top(S::Type{<:TropicalCSemifield{T}}) where T = S(-Inf)#Shorter than the original
+#Base.inv(x::S) where S<:TropicalCSemifield = S(-val(x))
+#∂sum(z::S, x::S) where S<:TropicalCSemifield = valtype(S)(x == z)
+#∂rmul(x::S, a::S) where S<:TropicalCSemifield = valtype(S)(1)#FVA: not sure of this
+#∂lmul(a::S, x::S) where S<:TropicalCSemifield = valtype(S)(1)#FVA: not sure of this
+
+"""
+    const ArcticCSemifield{T} = EntropyCSemifield{T,Inf} where T
+
+Complete arctic or max-plus semifield: ``\\langle \\mathbb{R} \\cup \\{\\infty \\}, max, +, -\\infty, 0, +\\infty \\rangle``.
+This is the complete entropy semifield with ``\\tau = \\infty``.
+
+"""
+const ArcticCSemifield{T} = EntropyCSemifield{T,Inf} where T#Technically correct, but a mouthful
+const MaxPlusCSemifield{T} = ArcticCSemifield{T} where T#Preferred named
+⊕(x::S, y::S) where S<:ArcticCSemifield = S(max(val(x), val(y)))
+#⊗(x::S, y::S) where S<:ArcticCSemifield = S(val(x) + val(y))#Not changed from the original
+Base.zero(S::Type{<:ArcticCSemifield{T}}) where T = S(-Inf)#Shorter than the original
+#Base.one(S::Type{<:ArcticCSemifield{T}}) where T = S(zero(T))#Not changed from the original
+top(S::Type{<:ArcticCSemifield{T}}) where T = S(Inf)#Shorter than the original
+#Base.inv(x::S) where S<:ArcticCSemifield = S(-val(x))#Not changed from the original
+#∂sum(z::S, x::S) where S<:ArcticCSemifield = valtype(S)(x == z)#FVA:  WRONG after the original author of Semirings. 
+#∂rmul(x::S, a::S) where S<:ArcticCSemifield = valtype(S)(1)#FVA: not sure of this
+#∂lmul(a::S, x::S) where S<:ArcticCSemifield = valtype(S)(1)#FVA: not sure of this
+
 
 end#CSemifields
