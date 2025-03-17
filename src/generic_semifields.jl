@@ -13,11 +13,16 @@ A module to define generic and concrete semifields.
 =#
 
 using ChainRulesCore
-import LogExpFunctions: logaddexp
+#import LogExpFunctions: logaddexp
 #FVA: the following have to be reexported by GenericSemifields, and suscribed to Semirings
 #import ..Semirings: ⊕, ⊗, val, valtype, ∂sum, ∂rmul, ∂lmul, Semiring
 using Reexport#apparently has to be imported in every module context
-@reexport using ..Semirings#This should not be needed, since Semirings is re-exported by Semifields.
+#@reexport using ..Semirings#This should not be needed, since Semirings is re-exported by Semifields.
+@reexport import ..Semirings: Semiring, 
+    ⊕,⊗,val, valtype,zero, one, 
+    ∂sum,∂rmul,∂lmul, _logaddexp, _holderaverage, 
+    BoolSemiring, EntropySemiring, EnergySemiring, ArcticSemiring, TropicalSemiring
+
 
 export
      inv, #multiplicative inversion

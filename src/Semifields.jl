@@ -20,7 +20,7 @@ import LogExpFunctions: logaddexp
 export
     Semirings,#The base module on semirings.
     #GenericSemifields,#The module on generic semifields.
-    CompleteSemifields#The module on complete semifields.
+    CSemifields#The module on complete semifields.
 
 #FVA the following module is completely re-exported. 
 include("semirings.jl")#An in-house re-write of L.Ondel Yang's code. 
@@ -30,8 +30,8 @@ include("generic_semifields.jl")#A module to define generic semifields.
 
 # The following module is completely re-exported.
 #using Reexport
-#@reexport using CompleteSemifields
-#include("CSemifields.jl")#A module to define complete semifields.
+#@reexport using CSemifields
+include("CSemifields.jl")#A module to define complete semifields.
 #FVA: the following shamelessly copies the matrixsemiring.jl file by L. Ondel.
 #module MatrixSemirings
 

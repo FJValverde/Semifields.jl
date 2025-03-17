@@ -165,10 +165,11 @@ end
 end
 =#
 
+# Need add more tests for the semiring morphisms.
 @testset "morphisms" begin
 	for T in [Float64, Float32]
         x = EntropySemiring{T,1}(2.3)
-        y = EnergySemiring{T}(exp(2.3))
+        y = EnergySemiring{T,-1}(exp(2.3))
         @test val(x) ≈ log(val(y))
         @test val(y) ≈ exp(val(x))
 	end

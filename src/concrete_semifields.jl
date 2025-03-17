@@ -1,5 +1,3 @@
-import ..Semirings: ⊕,⊗,val, valtype,∂sum,∂rmul,∂lmul
-
 ###############################################################################
 # Concrete semifield types.
 """
@@ -17,7 +15,7 @@ end
 ⊗(x::BoolSemifield, y::BoolSemifield) = BoolSemifield(x.val && y.val)
 Base.zero(::Type{<:BoolSemifield}) = BoolSemifield(false)
 Base.one(::Type{<:BoolSemifield}) = BoolSemifield(true)
-top(::Type{<:BoolSemifield}) = BoolSemifield(true)
+#top(::Type{<:BoolSemifield}) = BoolSemifield(true)
 #⊤::Type{BoolSemifield} = top(::Type{BoolSemifield})
 Base.inv(x::Type{<:BoolSemifield}) = BoolSemifield(!x.val)
 
@@ -38,7 +36,7 @@ struct EntropySemifield{T<:AbstractFloat,τ} <: Semifield{T}
     val::T
 end
 
-_logaddexp(τ, x, y) = inv(τ) * logaddexp(τ*x, τ*y)#operations in floats. 
+#_logaddexp(τ, x, y) = inv(τ) * logaddexp(τ*x, τ*y)#operations in floats. 
 #The inversion here is the reason why τ cannot be zero.
 
 function ⊕(x::EntropySemifield{T,τ}, y::EntropySemifield{T,τ}) where {T,τ}
@@ -71,13 +69,7 @@ end
 
 Base.one(S::Type{<:EntropySemifield{T,τ}}) where {T,τ}  = S(zero(T))
 
-"""
-    top(S::Type{<:EntropySemifield{T,τ}}) where {T,τ}
-
-Defined as the inverse of the zero.
-"""
-top(S::Type{<:EntropySemifield{T,τ}}) where {T,τ} = S(τ > 0 ? T(Inf) : T(-Inf))
-
+#=FVA: This is already defined (but not exported) in Semirings
 function ChainRulesCore.rrule(::typeof(_logaddexp), b, x, y)
     z = _logaddexp(b, x, y)
     
@@ -103,6 +95,7 @@ function ChainRulesCore.rrule(::typeof(_logaddexp), b, x, y)
     z, _logaddexp_pullback
 end
     
+=#
 ∂sum(z::EntropySemifield{T,τ}, x::EntropySemifield{T,τ}) where {T,τ} =
     #val(z) == -Inf ? zero(T) : exp(τ*(val(x) - val(z)))
     z == zero(EntropySemifield{T,τ}) ? zero(T) : exp(τ*(val(x) - val(z)))
@@ -170,7 +163,7 @@ const MinPlusSemifield{T} = TropicalSemifield{T} where T
 ⊗(x::S, y::S) where S<:TropicalSemifield = S(val(x) + val(y))
 Base.zero(S::Type{<:TropicalSemifield{T}}) where T = S(Inf)
 Base.one(S::Type{<:TropicalSemifield{T}}) where T = S(zero(T))
-top(S::Type{<:TropicalSemifield{T}}) where T = S(Inf)
+#top(S::Type{<:TropicalSemifield{T}}) where T = S(Inf)
 Base.inv(x::S) where S<:TropicalSemifield = S(-val(x))
 ∂sum(z::S, x::S) where S<:TropicalSemifield = valtype(S)(x == z)
 ∂rmul(x::S, a::S) where S<:TropicalSemifield = valtype(S)(1)#FVA: not sure of this
@@ -189,7 +182,7 @@ const MaxPlusSemifield{T} = ArcticSemifield{T} where T
 ⊗(x::S, y::S) where S<:ArcticSemifield = S(val(x) + val(y))
 Base.zero(S::Type{<:ArcticSemifield{T}}) where T = S(-Inf)
 Base.one(S::Type{<:ArcticSemifield{T}}) where T = S(zero(T))
-top(S::Type{<:ArcticSemifield{T}}) where T = S(-Inf)
+#top(S::Type{<:ArcticSemifield{T}}) where T = S(-Inf)
 Base.inv(x::S) where S<:ArcticSemifield = S(-val(x))
 ∂sum(z::S, x::S) where S<:ArcticSemifield = valtype(S)(x == z)#FVA:  WRONG after the original author of Semirings. 
 ∂rmul(x::S, a::S) where S<:ArcticSemifield = valtype(S)(1)#FVA: not sure of this
@@ -207,7 +200,7 @@ struct EnergySemifield{T<:AbstractFloat,τ} <: Semifield{T}
     val::T
 end
 
-_holderaverage(t,x,y) = (x^t + y^t)^(1/t)#Clearly this involves some type of Float.
+#_holderaverage(t,x,y) = (x^t + y^t)^(1/t)#Clearly this involves some type of Float.
 
 function ⊕(x::EnergySemifield{T,τ}, y::EnergySemifield{T,τ}) where {T,τ}
     iszero(x) && return y#early termination
@@ -218,13 +211,13 @@ function ⊕(x::EnergySemifield{T,τ}, y::EnergySemifield{T,τ}) where {T,τ}
 end
 ⊗(x::S, y::S) where S<:EnergySemifield = S(val(x) * val(y))
 Base.inv(x::S) where S<:EnergySemifield = S(inv(val(x)))
-Base.zero(S::Type{<:EnergySemifield{T,τ}}) where {T,τ} = S(zero(T))
-Base.one(S::Type{<:EnergySemifield{T,τ}}) where {T,τ} = S(one(T))
-top(S::Type{<:EnergySemifield{T,τ}}) where {T,τ} = S(Inf)
-∂sum(z::EnergySemifield{T,τ}, x::EnergySemifield{T,τ}) where {T,τ} =
-    z == zero(EnergySemifield{T,τ}) ? zero(T) : τ * (val(x)^(τ - 1)) * val(z)#FVA: not sure of this
-∂rmul(x::S, a::S) where S<:EnergySemifield = val(a)#FVA: not sure of this
-∂lmul(a::S, x::S) where S<:EnergySemifield = val(a)#FVA: not sure of this
+#Base.zero(S::Type{<:EnergySemifield{T,τ}}) where {T,τ} = S(zero(T))
+#Base.one(S::Type{<:EnergySemifield{T,τ}}) where {T,τ} = S(one(T))
+#top(S::Type{<:EnergySemifield{T,τ}}) where {T,τ} = S(Inf)
+#∂sum(z::EnergySemifield{T,τ}, x::EnergySemifield{T,τ}) where {T,τ} =
+#    z == zero(EnergySemifield{T,τ}) ? zero(T) : τ * (val(x)^(τ - 1)) * val(z)#FVA: not sure of this
+#∂rmul(x::S, a::S) where S<:EnergySemifield = val(a)#FVA: not sure of this
+#∂lmul(a::S, x::S) where S<:EnergySemifield = val(a)#FVA: not sure of this
 
 
 """
@@ -236,7 +229,7 @@ const MaxTimesSemifield{T} = EnergySemifield{T,Inf} where T
 ⊕(x::S, y::S) where S<:MaxTimesSemifield = S(max(val(x), val(y)))
 Base.zero(S::Type{<:MaxTimesSemifield{T}}) where T = S(-Inf)
 Base.one(S::Type{<:MaxTimesSemifield{T}}) where T = S(zero(T))
-top(S::Type{<:MaxTimesSemifield{T}}) where T = S(-Inf)
+#top(S::Type{<:MaxTimesSemifield{T}}) where T = S(-Inf)
 
 """
     MinTimesSemifield{T} where T
@@ -247,4 +240,4 @@ const MinTimesSemifield{T} = EnergySemifield{T,-Inf} where T
 ⊕(x::S, y::S) where S<:MinTimesSemifield = S(min(val(x), val(y)))
 Base.zero(S::Type{<:MinTimesSemifield{T}}) where T = S(Inf)
 Base.one(S::Type{<:MinTimesSemifield{T}}) where T = S(zero(T))
-top(S::Type{<:MinTimesSemifield{T}}) where T = S(Inf)
+#top(S::Type{<:MinTimesSemifield{T}}) where T = S(Inf)
