@@ -1,5 +1,9 @@
-using Reexport
-@reexport module CSemifields
+#FVA: once CSemifields are working, since the focus of the project is on double complete
+# semifields, the following module should be re-exported.
+#
+#using Reexport
+#@reexport 
+module CSemifields
 """
     CSemifields -- Complete Semifields
 
@@ -35,6 +39,8 @@ import Semifields: Semifield, EntropySemifield
 
 """
     CSemifield{T} <: Semifield{T}
+
+Complete semifields with a top added. 
 """
 abstract type CSemifield{T} <: Semifield{T} 
 end
@@ -120,18 +126,20 @@ An alias for the zero element of the TernaryCSemifield.
     isnothing(x.val) ? y :
     isnothing(y.val) ? x : nothing
 
-"""
-    struct EntropyCSemifield{T,τ} <: CSemifield{T}
-        val::T
-    end
+#FVA: the doc raw prevents the docstrings from being interpreted.  
+
+@doc raw"""
+struct EntropyCSemifield{T,τ} <: CSemifield{T}
+    val::T
+end
 
 Entropic complete semifields: ``(\\mathbb{R} \\cup \\{- \\infty \\}, \\oplus_{\\log}, +, -\\infty, 0, \\infty)``
-where ``\\tau\\belongs\\overline\\mathbb{R}`` and ``\\oplus_{\\log}`` is the log-sum-exp operation:
+where ``\tau\belongsto\overline\mathbb{R}`` and ``\oplus_{\log}`` is the log-sum-exp operation:
 ```math
-x \\oplus y = \\frac{1}{\\tau} \\log ( e^{\\tau x} + e^{\\tau y} ).
+x \oplus y = \frac{1}{\tau} \log ( e^{\tau x} + e^{\tau y} ).
 ```
-Note that ``\\tau \\neq 0'' and that ``\\tau < 0'' makes is a *cost* semifield, while
-``\\tau > 0'' makes a *utility* semifield.
+Note that ``\tau \neq 0`` and that ``\tau < 0`` makes is a *cost* semifield, while
+``\tau > 0`` makes a *utility* semifield.
 """
 struct EntropyCSemifield{T,τ} <: CSemifield{T} 
     val::T
@@ -154,7 +162,12 @@ end
 =#
 #Base.zero(S::Type{<:EntropySemifield{T,τ}}) where {T,τ} = S(ifelse(τ > 0, T(-Inf), T(Inf)))
 
-Base.one(S::Type{<:EntropyCSemifield{T,τ}}) where {T,τ}  = S(zero(T))
+"""
+    one(S::Type{<:EntropyCSemifield{T,τ}}) → EntropyCSemifield{T,τ}
+
+The unit in the semifield, when τ != 0.0.
+"""
+Base.one(S::Type{<:EntropyCSemifield{T,τ}}) where {T,τ} = S(zero(T))
 
 """
     top(S::Type{<:EntropyCSemifield{T,τ}}) where {T,τ}
@@ -173,12 +186,9 @@ top(S::Type{<:EntropyCSemifield{T,τ}}) where {T,τ} = S(τ > 0 ? T(Inf) : T(-In
 """
     inv(x::EntropyCSemifield{T,τ}) where {T,τ}  = EntropyCSemifield{T,τ}(-val(x))
 
+The multiplicative inverse unary operator. 
 """
-    inv(x::EntropyCSemifield{T,τ}) where {T,τ}  = EntropyCSemifield{T,τ}(-val(x))
-"""
-    inv(x::EntropyCSemifield{T,τ}) where {T,τ}  = EntropyCSemifield{T,τ}(-val(x))
-"""
-Base.inv(x::S) where S <: EntropyCSemifield  = S(-val(x))
+Base.inv(S::Type{<:EntropyCSemifield{T,τ}}) where {T,τ}  = S(-val(x))
 
 """
     ⊕(x::EntropyCSemifield{T,τ}, y::EntropyCSemifield{T,τ}) where {T,τ} = 

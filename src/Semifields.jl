@@ -32,6 +32,10 @@ include("generic_semifields.jl")#A module to define generic semifields.
 #using Reexport
 #@reexport using CSemifields
 include("CSemifields.jl")#A module to define complete semifields.
+
+#FVA: use the CSemifields module to define the double complete semifields.
+include("DoubleCSemifields.jl")#A module to define complete semifields.
+
 #FVA: the following shamelessly copies the matrixsemiring.jl file by L. Ondel.
 #module MatrixSemirings
 
