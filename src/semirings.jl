@@ -371,4 +371,4 @@ function ChainRulesCore.rrule(S::Type{<:Semiring}, a)
     b, semiring_pullback
 end
 
-end
+end#Semirings

@@ -10,16 +10,16 @@ A module to define complete semifields as pairs of two semifields related by inv
 Double semifields, as use, e.g in convex analysis, max-min-plus algebra, probability theory, etc.
 """
 
-export top, # the top element of the complete semifield.
-    ⊤,# an alternate name for the top element.
-    ⊥, #an alternate name for the bottom element. 
-    ⌶,#\topbot, an alternative for the unit element
+export DoubleCSemifield,#the basic abstract type of Complete(d) semifields.
+    #top, # the top element of the complete semifield.
+    #⊤,# an alternate name for the top element.
+    #⊥, #an alternate name for the bottom element. 
+    #⌶,#\topbot, an alternative for the unit element
     #operations
     ⊕̇, ⊗̇,#upper addition ''\oplus\dot'', multiplication \otimes\dot 
     ⊕̧, ⊗̧,#lower addition ''\oplus\c'', multplication \otimes\c (for the time being)
     # TODO: try to actually find something like \oplus\ldot lower dot, instead of \c
 
-    DoubleCSemifield,#the basic abstract type of Complete(d) semifields.
     #TernaryDoubleCSemifield,#The basic semifield included in all the rest.
     EntropyDoubleCSemifield,#The pair of semifields of logarithmic ranges.
     MaxMinPlusSemifield#The pair of semifields of min-plus ranges.
@@ -35,9 +35,9 @@ export top, # the top element of the complete semifield.
 
 import ..Semirings: ⊕,⊗,val, valtype,∂sum,∂rmul,∂lmul, Semiring, _logaddexp, _holderaverage
 
-#import ..GenericSemifields: Semifield
-#import Semifields: Semifield, EntropySemifield
-import ..CSemifields: CSemifield, EntropyCSemifield
+import Semifields: Semifield, EntropySemifield, CSemifields
+
+import ..CSemifields: CSemifield, EntropyCSemifield, top, ⊤, ⊥, ⌶
 
 """
     DoubleCSemifield{T} <: CSemifield{T}
@@ -66,9 +66,9 @@ end
 
 Visual notation for top(⊤, \\top), bottom(⊥, \\bot) and unit (⌶, \\topbot) elements of the semifield.
 """
-⊤(S::Type{<:DoubleCSemifield}) = top(S)
-⊥(S::Type{<:DoubleCSemifield}) = zero(S)
-⌶(S::Type{<:DoubleCSemifield}) = one(S)
+CSemifields.⊤(S::Type{<:DoubleCSemifield}) = top(S)
+CSemifields.⊥(S::Type{<:DoubleCSemifield}) = zero(S)
+CSemifields.⌶(S::Type{<:DoubleCSemifield}) = one(S)
 
 """
     convert(S::Type{<:DoubleCSemifield}, x::Number) → DoubleCSemifield
@@ -188,7 +188,7 @@ K = EntropyDoubleCSemifield{Float64,1.0}
 @test ⊤(K) == inv(⊥(K))
 ```
 """
-top(S::Type{<:EntropyDoubleCSemifield{T,τ}}) where {T,τ} = S(τ > 0 ? T(Inf) : T(-Inf))
+CSemifields.top(S::Type{<:EntropyDoubleCSemifield{T,τ}}) where {T,τ} = S(τ > 0 ? T(Inf) : T(-Inf))
 
 """
     inv(x::EntropyDoubleCSemifield{T,τ}) where {T,τ}  = EntropyDoubleCSemifield{T,τ}(-val(x))
@@ -247,29 +247,38 @@ Lower multiplication in double complete semifields, including results for the to
 
 Upper addition in double complete semifields, including results for the top which is the zero for it.
 """
-function ⊕̇(x::EntropyDoubleCSemifield{T,τ}, y::EntropyDoubleCSemifield{T,τ}) where {T,τ}
+function ⊕̇(x::S, y::S) where S<:EntropyDoubleCSemifield{T,τ} where {T,τ}
     #iszero(x) && return y#early termination
     #iszero(y) && return x#early termination
     #return(EntropyDoubleCSemifield{T,τ}(_logaddexp(τ, val(x), val(y))))
-    x == top(x) ? y :
-    y == top(y) ? x :
-    EntropyDoubleCSemifield{T,-τ}(_logaddexp(-τ, val(x), val(y)))
+    x == top(S) ? y :
+    y == top(S) ? x :
+    #EntropyDoubleCSemifield{T,τ}(_logaddexp(-τ, val(x), val(y)))
+    S(_logaddexp(-τ, val(x), val(y)))#This is the crux of the doubling!
 end
 
-
 """
-    ⊗̇(x::EntropyDoubleCSemifield{T,τ}, y::EntropyDoubleCSemifield{T,τ}) where {T,τ}
+    oplusu(x::EntropyDoubleCSemifield{T,τ}, y::EntropyDoubleCSemifield{T,τ}) where {T,τ}
 
 The upper multiplication.
 """
-function ⊗̇(x::S, y::S) where S<:EntropyCSemifield
+function oplusu(x::S, y::S) where S<:EntropyDoubleCSemifield
+#function ⊗̇(x::S, y::S) where S <: EntropyCSemifield{T,τ} where {T,τ}
     #iszero(x) && return x#early termination
     #iszero(y) && return y#early termination
     #return S(val(x) + val(y))
     x == top(S) ? x : 
     y == top(S) ? y : 
     S(val(x) + val(y))
-end #module 
+end 
+
+#FVA: this double definition is so that MaxMinPlus can use it. 
+"""
+    ⊗̇(x::EntropyDoubleCSemifield{T,τ}, y::EntropyDoubleCSemifield{T,τ}) where {T,τ}
+
+Upper multiplication in double complete semifields, including results for the top which is absorptive.
+"""
+⊗̇(x::EntropyDoubleCSemifield{T,τ}, y::EntropyDoubleCSemifield{T,τ}) where {T,τ} = oplusu(x, y)
 
 
 """ 
@@ -289,6 +298,7 @@ const MaxMinPlusSemifield{T} = EntropyDoubleCSemifield{T,Inf} where T
 """
 ⊕̇(x::S, y::S) where S<:MaxMinPlusSemifield = S(min(val(x), val(y)))
 
+#FVA: for some reason the inference over types is incomplete and 
 #=
 """
     const TropicalDoubleCSemifield{T} = EntropyDoubleCSemifield{T,-Inf} where T

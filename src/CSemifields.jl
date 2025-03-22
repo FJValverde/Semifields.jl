@@ -231,7 +231,7 @@ const MinPlusCSemifield{T} = TropicalCSemifield{T} where T
 Base.zero(S::Type{<:TropicalCSemifield{T}}) where T = S(Inf)#Shorter than the original
 #Base.one(S::Type{<:TropicalCSemifield{T}}) where T = S(zero(T))#Not changed from the original
 top(S::Type{<:TropicalCSemifield{T}}) where T = S(-Inf)#Shorter than the original
-#Base.inv(x::S) where S<:TropicalCSemifield = S(-val(x))
+Base.inv(x::S) where S<:TropicalCSemifield = S(-val(x))
 #∂sum(z::S, x::S) where S<:TropicalCSemifield = valtype(S)(x == z)
 #∂rmul(x::S, a::S) where S<:TropicalCSemifield = valtype(S)(1)#FVA: not sure of this
 #∂lmul(a::S, x::S) where S<:TropicalCSemifield = valtype(S)(1)#FVA: not sure of this
@@ -250,7 +250,7 @@ const MaxPlusCSemifield{T} = ArcticCSemifield{T} where T#Preferred named
 Base.zero(S::Type{<:ArcticCSemifield{T}}) where T = S(-Inf)#Shorter than the original
 #Base.one(S::Type{<:ArcticCSemifield{T}}) where T = S(zero(T))#Not changed from the original
 top(S::Type{<:ArcticCSemifield{T}}) where T = S(Inf)#Shorter than the original
-#Base.inv(x::S) where S<:ArcticCSemifield = S(-val(x))#Not changed from the original
+Base.inv(x::S) where S<:ArcticCSemifield = S(-val(x))#Not changed from the original
 #∂sum(z::S, x::S) where S<:ArcticCSemifield = valtype(S)(x == z)#FVA:  WRONG after the original author of Semirings. 
 #∂rmul(x::S, a::S) where S<:ArcticCSemifield = valtype(S)(1)#FVA: not sure of this
 #∂lmul(a::S, x::S) where S<:ArcticCSemifield = valtype(S)(1)#FVA: not sure of this

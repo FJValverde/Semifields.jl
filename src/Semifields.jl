@@ -18,9 +18,10 @@ using ChainRulesCore
 import LogExpFunctions: logaddexp
 
 export
-    Semirings,#The base module on semirings.
+    Semirings,#The base module on semirings. Re-exported.
     #GenericSemifields,#The module on generic semifields.
-    CSemifields#The module on complete semifields.
+    CSemifields,#The module on complete semifields. Not re-exported.
+    DoubleCSemifields#The module on double complete semifields. Re-exported.
 
 #FVA the following module is completely re-exported. 
 include("semirings.jl")#An in-house re-write of L.Ondel Yang's code. 
