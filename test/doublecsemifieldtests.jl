@@ -1,8 +1,7 @@
-using Semifields
 using Test
 using ChainRulesCore
-#import LogExpFunctions: logaddexp
-using ..DoubleCSemifields
+#using Semifields
+#using ..DoubleCSemifields
 
 @testset "Complete Semifields: unitary constructors" begin
 #=
@@ -104,5 +103,4 @@ import ..Semirings: _logaddexp
             end
         end
     end
-end#@testset "Double Complete Semifields: basic operations" 
-
+end#@testset "Double Complete Semifields: basic operations"

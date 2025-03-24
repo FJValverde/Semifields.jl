@@ -1,6 +1,6 @@
-using Semifields
-using Test
-using ChainRulesCore
+#using Semifields
+#using Test
+#using ChainRulesCore
 #import LogExpFunctions: logaddexp
 using ..CSemifields
 

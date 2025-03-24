@@ -30,14 +30,14 @@ export DoubleCSemifield,#the basic abstract type of Complete(d) semifields.
 =#
 #using ChainRulesCore
 #import LogExpFunctions: logaddexp
-#using Reexport
+using Reexport
 #@reexport using ..Semifields#This should not be needed, since Semirings is re-exported by Semifields.
 
-import ..Semirings: ⊕,⊗,val, valtype,∂sum,∂rmul,∂lmul, Semiring, _logaddexp, _holderaverage
+@reexport import ..Semirings: ⊕,⊗,val, valtype,∂sum,∂rmul,∂lmul, Semiring, _logaddexp, _holderaverage
 
-import Semifields: Semifield, EntropySemifield, CSemifields
+@reexport import Semifields: Semifield, EntropySemifield, CSemifields, inv, zero, one
 
-import ..CSemifields: CSemifield, EntropyCSemifield, top, ⊤, ⊥, ⌶
+@reexport import ..CSemifields: CSemifield, EntropyCSemifield, top, ⊤, ⊥, ⌶
 
 """
     DoubleCSemifield{T} <: CSemifield{T}
@@ -66,9 +66,9 @@ end
 
 Visual notation for top(⊤, \\top), bottom(⊥, \\bot) and unit (⌶, \\topbot) elements of the semifield.
 """
-CSemifields.⊤(S::Type{<:DoubleCSemifield}) = top(S)
-CSemifields.⊥(S::Type{<:DoubleCSemifield}) = zero(S)
-CSemifields.⌶(S::Type{<:DoubleCSemifield}) = one(S)
+⊤(S::Type{<:DoubleCSemifield}) = top(S)
+⊥(S::Type{<:DoubleCSemifield}) = zero(S)
+⌶(S::Type{<:DoubleCSemifield}) = one(S)
 
 """
     convert(S::Type{<:DoubleCSemifield}, x::Number) → DoubleCSemifield
@@ -150,7 +150,8 @@ struct EntropyDoubleCSemifield{T,τ} <: DoubleCSemifield{T}
     val::T
 end
 
-Base.convert(S::Type{<:EntropyDoubleCSemifield}, x::EntropyCSemifield) = S(val(x))#For subtypes of semifields.
+#Base.convert(S::Type{<:EntropyDoubleCSemifield}, x::Number) = S(x)
+#Base.convert(S::Type{<:EntropyDoubleCSemifield}, x::EntropyCSemifield) = S(val(x))#For subtypes of semifields.
 
 """
     zero(S::Type{<:EntropyDoubleCSemifield{T,τ}}) → EntropyDoubleCSemifield{T,τ}

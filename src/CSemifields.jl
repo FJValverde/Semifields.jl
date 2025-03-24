@@ -1,9 +1,8 @@
 #FVA: once CSemifields are working, since the focus of the project is on double complete
 # semifields, the following module should be re-exported.
 #
-#using Reexport
-#@reexport 
-module CSemifields
+using Reexport
+@reexport module CSemifields
 """
     CSemifields -- Complete Semifields
 
@@ -35,7 +34,7 @@ export top, # the top element of the complete semifield.
 import ..Semirings: ⊕,⊗,val, valtype,∂sum,∂rmul,∂lmul, Semiring, _logaddexp, _holderaverage
 
 #import ..GenericSemifields: Semifield
-import Semifields: Semifield, EntropySemifield
+import Semifields: Semifield, EntropySemifield, inv, zero, one
 
 """
     CSemifield{T} <: Semifield{T}
@@ -188,7 +187,8 @@ top(S::Type{<:EntropyCSemifield{T,τ}}) where {T,τ} = S(τ > 0 ? T(Inf) : T(-In
 
 The multiplicative inverse unary operator. 
 """
-Base.inv(S::Type{<:EntropyCSemifield{T,τ}}) where {T,τ}  = S(-val(x))
+Base.inv(x::EntropyCSemifield{T,τ}) where {T,τ}  = 
+    EntropyCSemifield{T,τ}(-val(x))
 
 """
     ⊕(x::EntropyCSemifield{T,τ}, y::EntropyCSemifield{T,τ}) where {T,τ} = 
