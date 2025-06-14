@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: CECILL-2.1
 #FVA: Bring in all of the machinery from Semirings.jl
 #FVA: However we define the matrix semiring on dense matrices. 
+using Reexport
+@reexport module MatrixSemirings
+
 import LinearAlgebra: diagm
 #using Reexport
-#@reexport 
-using Semirings
+using ..Semirings#FVA we've kept Semirings unexported for this purpose. 
+export MatrixSemiring, val , iszero, isone, zero, one, +, *, transpose, ⊕, ⊗, broadcasted
 
 """
     MatrixSemiring{D,T} <: Semiring{T}
@@ -12,7 +15,7 @@ using Semirings
 Semiring over `D x D` square matrices. `+` is the elementwise addition and `*`
 is the standard matrix multiplication.
 """
-struct MatrixSemiring{D,T} #<: Semiring{AbstractMatrix{T}}
+struct MatrixSemiring{D,T} <: Semiring{AbstractMatrix{T}}
     #val::T#FVA: this looks buggy. It should be a matrix.
     val::AbstractMatrix{T}#No indication that they have to be a semiring here!
 
@@ -28,11 +31,29 @@ end
 MatrixSemiring(x::AbstractMatrix) = MatrixSemiring{size(x, 1),eltype(x)}(x)
 
 Semirings.val(x::MatrixSemiring) = x.val
+
 Base.:+(x::MatrixSemiring{D}, y::MatrixSemiring{D}) where D = MatrixSemiring{D}(val(x) + val(y))
+# Kronecker multiplication of matrices.
 Base.:*(x::MatrixSemiring{D}, y::MatrixSemiring{D}) where D = MatrixSemiring{D}(val(x) * val(y))
 
-Base.zero(::Type{MatrixSemiring{D,T}}) where {D,T} = MatrixSemiring{D}(zeros(eltype(T), D, D))
-Base.one(::Type{MatrixSemiring{D,T}}) where {D,T} = MatrixSemiring{D,T}(diagm(ones(eltype(T), D)))
+"""
+    ⊕(x::MatrixSemiring{D,T}, y::MatrixSemiring{D,T}) where {D,T}
+
+Addition of matrices qua elements of a semiring.
+"""
+⊕(x::MatrixSemiring{D,T}, y::MatrixSemiring{D,T}) where {D,T} = x + y
+
+"""
+    ⊗(x::MatrixSemiring{D,T}, y::MatrixSemiring{D,T}) where {D,T}
+
+Multiplication of matrices qua elements of a semiring.
+"""
+⊗(x::MatrixSemiring{D,T}, y::MatrixSemiring{D,T}) where {D,T} = x * y
+
+#Base.zero(::Type{MatrixSemiring{D,T}}) where {D,T} = MatrixSemiring{D}(zeros(eltype(T), D, D))
+Base.zero(::Type{MatrixSemiring{D,T}}) where {D,T} = MatrixSemiring{D}(zeros(T, D, D))
+#Base.one(::Type{MatrixSemiring{D,T}}) where {D,T} = MatrixSemiring{D,T}(diagm(ones(eltype(T), D)))
+Base.one(::Type{MatrixSemiring{D,T}}) where {D,T} = MatrixSemiring{D,T}(diagm(ones(T, D)))
 #Base.zero(::Type{MatrixSemiring{D,T}}) where {D,T<:AbstractMatrix} = MatrixSemiring{D,T}(spzeros(eltype(T), D, D))
 #Base.one(::Type{MatrixSemiring{D,T}}) where {D,T<:AbstractMatrix} = MatrixSemiring{D,T}(sparse([(d, d) for d in 1:D], one(eltype(T)), D, D))
 
@@ -58,4 +79,7 @@ Base.transpose(x::MatrixSemiring{D,T}) where {D,T} = MatrixSemiring{D,T}(copy(tr
 #Base.Broadcast.broadcasted(::typeof(Base.transpose), x::AbstractSparseArray{T,I,N}) where {T<:MatrixSemiring,I,N} =
 #    SparseArray{T,I,N}(size(x), x.nzcoo, transpose.(x.nzval))
 Base.Broadcast.broadcasted(::typeof(Base.transpose), x::MatrixSemiring{D,T}) where {D,T} =
-    MatrixSemiring{D,T}(transpose(val(x)))#FVA: use full-typed constructor.
+    MatrixSemiring{D,T}(transpose(val(x)))
+#FVA does this carry out the actual operation? 
+
+end#MatrixSemirings

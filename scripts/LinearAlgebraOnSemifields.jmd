@@ -14,13 +14,15 @@ using Semifields
 ## Creating some data
 
 ```julia
-S = TropicalSemifield{Float64}
-A = Matrix{S}(zero(S), 3,5)
-A = Array{S}(zero(S), 3,5)
+S = TropicalCSemifield{Float64}
+#A = Matrix{S}(zero(S), 3,5)
+#A = Array{S}(zero(S), 3,5)
 A = [ 1.0 1.0 2.0 -Inf 5.0;
       1.0 0.0 4.0 1.0 5.0;
       1.0 -Inf -1.0 1.0 0.0]
 mmpA = map(S,A)
+S.(A)#Same operation
+@assert mmpA == S.(A)
 mmpAconj = inv(mmpA)
 Base.adjoint(A)= transpose(map(inv,A))
 adjointMmpA = adjoint(mmpA)

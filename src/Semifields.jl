@@ -19,6 +19,7 @@ import LogExpFunctions: logaddexp
 
 export
     Semirings,#The base module on semirings. Re-exported.
+    MatrixSemirings,#The module on matrix semirings. Re-exported.
     #GenericSemifields,#The module on generic semifields.
     CSemifields,#The module on complete semifields. Not re-exported.
     DoubleCSemifields#The module on double complete semifields. Re-exported.
@@ -41,15 +42,10 @@ include("DoubleCSemifields.jl")#A module to define complete semifields.
 #module MatrixSemirings
 
 #export MatrixSemiring, +, *
-#include("matrixsemiring.jl")#may be not needed!
-
-#end
-#using Reexport
-#@reexport using .Semirings#defined in semirings.jl
-
-#Reexport.@reexport MatrixSemirings
-#export MatrixSemifield, +, *, inv, top
-#include("matrixsemifield.jl")
-
+#FVA: the following module is completely re-exported.
+# It is a test on Julia's capabilities to define a semiring on matrices.
+# Note that this is not a complete semiring, but a semiring on matrices.
+# Furthermore, this models left of right actions on matrix semimodules, TBD
+include("matrixsemiring.jl")
 
 end#module Semifields
